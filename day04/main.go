@@ -15,11 +15,11 @@ func main() {
 		fmt.Println("Error in Part 2:", err)
 		return
 	}
-	// fmt.Println("Running Part 2:")
-	// if err := Part2(*inputFile); err != nil {
-	// 	fmt.Println("Error in Part 2:", err)
-	// 	return
-	// }
+	fmt.Println("Running Part 2:")
+	if err := Part2(*inputFile); err != nil {
+		fmt.Println("Error in Part 2:", err)
+		return
+	}
 }
 
 func Part1(inputFile string) error {
@@ -38,8 +38,6 @@ func Part1(inputFile string) error {
 	// Determine the number of rows and columns
 	rows := len(matrix)       // number of rows
 	columns := len(matrix[0]) // number of columns (assuming all rows are the same length)
-	fmt.Println("Rows: ", rows)
-	fmt.Println("Columns: ", columns)
 
 	// Parse the matrix to find X and check surrounding cells for "MAS" in all directions
 	for i := 0; i < rows; i++ {
@@ -84,6 +82,50 @@ func Part1(inputFile string) error {
 	}
 
 	fmt.Println("Score Part 1: ", score)
+	return nil
+}
+
+func Part2(inputFile string) error {
+	score := 0
+	bytes, err := os.ReadFile(inputFile)
+	if err != nil {
+		return err
+	}
+
+	// makeMatrix function will create the matrix from the input
+	matrix, err := makeMatrix(bytes)
+	if err != nil {
+		return err
+	}
+
+	// Determine the number of rows and columns
+	rows := len(matrix)       // number of rows
+	columns := len(matrix[0]) // number of columns (assuming all rows are the same length)
+
+	// Parse the matrix to find A and check surrounding cells for "MAS" in all directions
+	for i := 0; i < rows; i++ {
+		for j := 0; j < columns; j++ {
+			if matrix[i][j] == "A" {
+				// Check surrounding cells for "MAS" in all diagonal combinations around "A" (4 possible combinations work)
+
+				if i-1 >= 0 && j-1 >= 0 && i+1 < rows && j+1 < columns && matrix[i-1][j+1] == "M" && matrix[i+1][j-1] == "S" && matrix[i-1][j-1] == "M" && matrix[i+1][j+1] == "S" {
+					score++
+				}
+				if i-1 >= 0 && j-1 >= 0 && i+1 < rows && j+1 < columns && matrix[i-1][j+1] == "M" && matrix[i+1][j-1] == "S" && matrix[i-1][j-1] == "S" && matrix[i+1][j+1] == "M" {
+					score++
+				}
+				if i-1 >= 0 && j-1 >= 0 && i+1 < rows && j+1 < columns && matrix[i-1][j+1] == "S" && matrix[i+1][j-1] == "M" && matrix[i-1][j-1] == "M" && matrix[i+1][j+1] == "S" {
+					score++
+				}
+				if i-1 >= 0 && j-1 >= 0 && i+1 < rows && j+1 < columns && matrix[i-1][j+1] == "S" && matrix[i+1][j-1] == "M" && matrix[i-1][j-1] == "S" && matrix[i+1][j+1] == "M" {
+					score++
+				}
+
+			}
+		}
+	}
+
+	fmt.Println("Score Part 2: ", score)
 	return nil
 }
 
