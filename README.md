@@ -11,6 +11,6 @@ To automatically download your input, create a `.env` file in the `input` direct
 mkdir input/.env
 echo 'SESSION_COOKIE="YOUR SESSION COOKIE"' > input/.env
 cd input
-go run input/get_input.go --day 1
+go run get_input.go --day 1
 ```
 
