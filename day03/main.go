@@ -44,7 +44,6 @@ func Part1(inputFile string) error {
 				matches2 := re2.FindAllString(match, -1)
 				store := []int{}
 				for _, numStr := range matches2 {
-
 					num, err := strconv.Atoi(numStr)
 					if err != nil {
 						fmt.Println("Error converting string to int:", err)
