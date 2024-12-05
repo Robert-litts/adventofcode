@@ -16,11 +16,11 @@ func main() {
 		fmt.Println("Error in Part 1:", err)
 		return
 	}
-	// fmt.Println("Running Part 2:")
-	// if err := Part2(*inputFile); err != nil {
-	// 	fmt.Println("Error in Part 2:", err)
-	// 	return
-	// }
+	fmt.Println("Running Part 2:")
+	if err := Part2(*inputFile); err != nil {
+		fmt.Println("Error in Part 2:", err)
+		return
+	}
 }
 
 func Part1(inputFile string) error {
@@ -111,5 +111,103 @@ func Part1(inputFile string) error {
 	}
 
 	fmt.Println("Score Part 1: ", score)
+	return nil
+}
+
+func Part2(inputFile string) error {
+	score := 0
+	bytes, err := os.ReadFile(inputFile)
+	if err != nil {
+		return err
+	}
+
+	contents := string(bytes)
+
+	var column1 []int
+	var column2 []int
+	var update_list [][]int
+
+	lines := strings.Split(contents, "\n")
+
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		rules := strings.Split(line, "|")   //Split at "|" to create the rules
+		updates := strings.Split(line, ",") //Split at ","" to loop over page number updates
+
+		// Convert the first part to an integer and append to column1
+		if len(rules) >= 2 {
+			firstColumn, err := strconv.Atoi(rules[0])
+			if err != nil {
+				fmt.Println("Error converting first column value:", err)
+				continue
+			}
+			column1 = append(column1, firstColumn)
+
+			// Convert the second part to an integer and append to column2
+			secondColumn, err := strconv.Atoi(rules[1])
+			if err != nil {
+				fmt.Println("Error converting second column value:", err)
+				continue
+			}
+			column2 = append(column2, secondColumn)
+		}
+
+		if len(updates) >= 2 {
+			//Create update_list
+			var current_row []int
+			for _, item := range updates {
+				num, err := strconv.Atoi(item)
+				if err != nil {
+					fmt.Println("Error converting update value:", err)
+					continue
+				}
+				current_row = append(current_row, num)
+			}
+			update_list = append(update_list, current_row)
+		}
+	}
+
+	//Iterate thru update list, look for violations by checking each rule
+	for _, each := range update_list {
+		violations := 0
+		// Create a copy of the current row (each) as temp for modifications
+		temp := make([]int, len(each))
+		copy(temp, each)
+		//Iterate thru each rule, find index where a rule matches
+		for y := 0; y < len(column1); y++ {
+			index1 := -1 //initialize index to a value that is not possible
+			index2 := -1
+			//As we go thru each rule, check if it matches any value in the row
+			for z, item := range each {
+				//If the first rule matches the value in the update list, get the index
+				if column1[y] == item {
+					index1 = z
+				}
+				//If the second rule matches the value in the update list, get the index
+				if column2[y] == item {
+					index2 = z
+				}
+
+			}
+			//Now check if we have stored the index of any items matching the current rule
+			//If index of the item from the first column > the index of the second, violation & break
+			if index1 != -1 && index2 != -1 && index1 > index2 {
+				violations++
+
+				// Swap the items, reset the rule count
+				temp := each[index1]
+				each[index1] = each[index2]
+				each[index2] = temp
+				y = 0 //Reset rule count check to 0 (I.e. re-run all the rules over the swapped item)
+			}
+		}
+		//If any violations occurred, calculate the score based on the middle number
+		if violations > 0 {
+			score += each[len(each)/2] //Add the middle number to the score if all rules passed!
+		}
+	}
+	fmt.Println("Score Part 2: ", score)
 	return nil
 }
