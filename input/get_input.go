@@ -37,7 +37,7 @@ func downloadFile(day int, cookie string) error {
 	}
 
 	// Create the file to save the response content
-	fileName := fmt.Sprintf("day%d.input", day)
+	fileName := fmt.Sprintf("./input/day%d.input", day)
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err

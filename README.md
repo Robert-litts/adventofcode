@@ -8,9 +8,8 @@ Solutions to [Advent of Code 2024](https://adventofcode.com/2024) challenges, a 
 To automatically download your input, create a `.env` file in the `input` directory, add your session cookie and then run get_input.go with the day flag set to the input you'd like to grab:
 
 ```bash
-mkdir input/.env
-echo 'SESSION_COOKIE="YOUR SESSION COOKIE"' > input/.env
-cd input
-go run get_input.go --day 1
+touch .env
+echo 'SESSION_COOKIE="YOUR SESSION COOKIE"' > .env
+go run input/get_input.go --day 1
 ```
 
