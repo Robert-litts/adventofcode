@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 // Struct to represent a visited list of coordinates. Points is a slice of Coordinate structs.
@@ -35,7 +36,9 @@ func (v *Visited) CheckDir(newLoc Coordinate) bool {
 			break
 		}
 	}
-
+	if !found {
+		v.Points = append(v.Points, newLoc)
+	}
 	return found
 }
 
@@ -74,16 +77,19 @@ func isValidMove(loc Coordinate, matrix [][]string, maxX, maxY int) (bool, bool)
 func main() {
 	var inputFile = flag.String("inputFile", "../input/day6.input", "Relative file path to use as input.")
 	flag.Parse()
-	fmt.Println("Running Part 1:")
-	if err := Part1(*inputFile); err != nil {
-		fmt.Println("Error in Part 2:", err)
-		return
-	}
+	start := time.Now()
+	// fmt.Println("Running Part 1:")
+	// if err := Part1(*inputFile); err != nil {
+	// 	fmt.Println("Error in Part 2:", err)
+	// 	return
+	// }
 	fmt.Println("Running Part 2:")
 	if err := Part2(*inputFile); err != nil {
 		fmt.Println("Error in Part 2:", err)
 		return
 	}
+	duration := time.Since(start)
+	fmt.Printf("Execution Time: %s\n", duration)
 }
 
 func Part1(inputFile string) error {
@@ -271,7 +277,6 @@ func Part2(inputFile string) error {
 			// Movement logic
 			if dirUp {
 				newLoc := guardLoc.Add(moveUp)
-
 				inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
 				if inBounds && !isBlocked {
 					//fmt.Printf("Moving up to: %d, %d\n", newLoc.X, newLoc.Y)
@@ -366,6 +371,8 @@ func Part2(inputFile string) error {
 		// 	break
 		// }
 
+		var visitedLoop Visited
+
 		//skip the starting location
 		if point.X == start.X && point.Y == start.Y {
 			continue
@@ -393,9 +400,9 @@ func Part2(inputFile string) error {
 						//fmt.Printf("Moving up to: %d, %d\n", newLoc.X, newLoc.Y)
 						//fmt.Println("Next Spot Contains : ", matrix[newLoc.X][newLoc.Y])
 						guardLoc = newLoc
-						loop := visited.CheckDir(newLoc)
+						loop := visitedLoop.CheckDir(newLoc)
 						if loop {
-							fmt.Println("Loop detected.")
+							//fmt.Println("Loop detected.")
 							score++
 							dirUp = false
 							dirLeft = false
@@ -409,7 +416,7 @@ func Part2(inputFile string) error {
 						dirUp = false
 						dirRight = true
 					} else if !inBounds {
-						fmt.Println("Move is out of bounds.")
+						//fmt.Println("Move is out of bounds.")
 
 						dirUp = false
 						dirLeft = false
@@ -424,9 +431,9 @@ func Part2(inputFile string) error {
 					if inBounds && !isBlocked {
 						//fmt.Printf("Moving down to: %d, %d\n", newLoc.X, newLoc.Y)
 						guardLoc = newLoc
-						loop := visited.CheckDir(newLoc)
+						loop := visitedLoop.CheckDir(newLoc)
 						if loop {
-							fmt.Println("Loop detected.")
+							//fmt.Println("Loop detected.")
 							score++
 							dirUp = false
 							dirLeft = false
@@ -440,7 +447,7 @@ func Part2(inputFile string) error {
 						dirDown = false
 						dirLeft = true
 					} else if !inBounds {
-						fmt.Println("Move is out of bounds.")
+						//fmt.Println("Move is out of bounds.")
 						dirUp = false
 						dirLeft = false
 						dirRight = false
@@ -454,9 +461,9 @@ func Part2(inputFile string) error {
 					if inBounds && !isBlocked {
 						//fmt.Printf("Moving left to: %d, %d\n", newLoc.X, newLoc.Y)
 						guardLoc = newLoc
-						loop := visited.CheckDir(newLoc)
+						loop := visitedLoop.CheckDir(newLoc)
 						if loop {
-							fmt.Println("Loop detected.")
+							//fmt.Println("Loop detected.")
 							score++
 							dirUp = false
 							dirLeft = false
@@ -470,7 +477,7 @@ func Part2(inputFile string) error {
 						dirLeft = false
 						dirUp = true
 					} else if !inBounds {
-						fmt.Println("Move is out of bounds.")
+						//fmt.Println("Move is out of bounds.")
 						dirUp = false
 						dirLeft = false
 						dirRight = false
@@ -484,9 +491,9 @@ func Part2(inputFile string) error {
 					if inBounds && !isBlocked {
 						//fmt.Printf("Moving right to: %d, %d\n", newLoc.X, newLoc.Y)
 						guardLoc = newLoc
-						loop := visited.CheckDir(newLoc)
+						loop := visitedLoop.CheckDir(newLoc)
 						if loop {
-							fmt.Println("Loop detected.")
+							//fmt.Println("Loop detected.")
 							score++
 							dirUp = false
 							dirLeft = false
@@ -500,7 +507,7 @@ func Part2(inputFile string) error {
 						dirRight = false
 						dirDown = true
 					} else if !inBounds {
-						fmt.Println("Move is out of bounds.")
+						//fmt.Println("Move is out of bounds.")
 						dirUp = false
 						dirLeft = false
 						dirRight = false
@@ -515,7 +522,7 @@ func Part2(inputFile string) error {
 			}
 		}
 		//Reset point to dot
-		fmt.Println("Resetting Matrix")
+		//fmt.Println("Resetting Matrix")
 		matrix[point.Y][point.X] = "."
 
 	}
