@@ -175,41 +175,9 @@ func Part2(inputFile string) error {
 				//Find distance between antenna and all other antennas of the same type
 				for k := 0; k < len(antennaMap.Antennas); k++ {
 					if antennaMap.Antennas[k].Type == antennaType[i] && k != j {
-						fmt.Println("Finding antinodes between: ", antennaMap.Antennas[j].X, " ", antennaMap.Antennas[j].Y, " and ", antennaMap.Antennas[k].X, antennaMap.Antennas[k].Y)
-						//fmt.Println("Finding antinodes between: ", antennaMap.Antennas[j], " and ", antennaMap.Antennas[k])
-						x3, y3, x4, y4, dx, dy := findAntiNodesPart2(antennaMap.Antennas[j].X, antennaMap.Antennas[k].X, antennaMap.Antennas[j].Y, antennaMap.Antennas[k].Y)
+						//fmt.Println("Finding antinodes between: ", antennaMap.Antennas[j].X, " ", antennaMap.Antennas[j].Y, " and ", antennaMap.Antennas[k].X, antennaMap.Antennas[k].Y)
+						findAntiNodesPart2(antennaMap.Antennas[j].X, antennaMap.Antennas[k].X, antennaMap.Antennas[j].Y, antennaMap.Antennas[k].Y, columns, rows, &antinodeMap)
 
-						// Add the first antinode at (x3, y3)
-						if x3 >= 0 && x3 < columns && y3 >= 0 && y3 < rows {
-							antinode := Antinode{X: x3, Y: y3}
-							antinodeMap.AddPoint(antinode)
-						}
-
-						// Add the second antinode at (x4, y4)
-						if x4 >= 0 && x4 < columns && y4 >= 0 && y4 < rows {
-							antinode := Antinode{X: x4, Y: y4}
-							antinodeMap.AddPoint(antinode)
-						}
-
-						// Check for repeating patterns starting from (x3, y3)
-						for {
-							x3 += dx
-							y3 += dy
-							if x3 < 0 || x3 >= columns || y3 < 0 || y3 >= rows {
-								break
-							}
-							antinodeMap.AddPoint(Antinode{X: x3, Y: y3})
-						}
-
-						// Check for repeating patterns starting from (x4, y4)
-						for {
-							x4 -= dx
-							y4 -= dy
-							if x4 < 0 || x4 >= columns || y4 < 0 || y4 >= rows {
-								break
-							}
-							antinodeMap.AddPoint(Antinode{X: x4, Y: y4})
-						}
 					}
 
 				}
@@ -299,13 +267,44 @@ func findAntiNodes(x1, x2, y1, y2 int) (x3, y3, x4, y4 int) {
 	return x3, y3, x4, y4
 }
 
-func findAntiNodesPart2(x1, x2, y1, y2 int) (x3, y3, x4, y4, dx, dy int) {
-	dx = x2 - x1
-	dy = y2 - y1
-	x3 = 2*x1 - x2
-	y3 = 2*y1 - y2
-	x4 = 2*x2 - x1
-	y4 = 2*y2 - y1
+func findAntiNodesPart2(x1, x2, y1, y2, columns, rows int, antinodeMap *AntinodeMap) {
+	dx := x2 - x1
+	dy := y2 - y1
+	x3 := 2*x1 - x2
+	y3 := 2*y1 - y2
+	x4 := 2*x2 - x1
+	y4 := 2*y2 - y1
 
-	return x3, y3, x4, y4, dx, dy
+	// Add the first antinode at (x3, y3)
+	if x3 >= 0 && x3 < columns && y3 >= 0 && y3 < rows {
+		antinode := Antinode{X: x3, Y: y3}
+		antinodeMap.AddPoint(antinode)
+	}
+
+	// Add the second antinode at (x4, y4)
+	if x4 >= 0 && x4 < columns && y4 >= 0 && y4 < rows {
+		antinode := Antinode{X: x4, Y: y4}
+		antinodeMap.AddPoint(antinode)
+	}
+
+	// Check for repeating patterns starting from (x3, y3)
+	for {
+		x3 += dx
+		y3 += dy
+		if x3 < 0 || x3 >= columns || y3 < 0 || y3 >= rows {
+			break
+		}
+		antinodeMap.AddPoint(Antinode{X: x3, Y: y3})
+	}
+
+	// Check for repeating patterns starting from (x4, y4)
+	for {
+		x4 -= dx
+		y4 -= dy
+		if x4 < 0 || x4 >= columns || y4 < 0 || y4 >= rows {
+			break
+		}
+		antinodeMap.AddPoint(Antinode{X: x4, Y: y4})
+	}
+
 }
