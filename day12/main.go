@@ -207,3 +207,60 @@ func BFS(matrix [][]string, start Coordinate, visited map[Coordinate]bool) int {
 	price := perimeter * area
 	return price
 }
+
+func BFS2(matrix [][]string, start Coordinate, visited map[Coordinate]bool) int {
+	rows := len(matrix)
+	cols := len(matrix[0])
+	area := 1
+	perimeter := 0
+
+	// Directions for moving up, down, left, and right
+	directions := []Coordinate{
+		{X: 0, Y: 1},  // Right
+		{X: 1, Y: 0},  // Down
+		{X: 0, Y: -1}, // Left
+		{X: -1, Y: 0}, // Up
+	}
+
+	// Initialize the queue and enqueue the starting point
+	queue := Queue{}
+	queue.Enqueue(start)
+	visited[start] = true
+
+	// Perform BFS
+	for !queue.isEmpty() {
+		// Dequeue the first element
+		current := queue.Dequeue()
+
+		// Explore all neighbors
+		for _, d := range directions {
+			neighbor := Coordinate{X: current.X + d.X, Y: current.Y + d.Y}
+
+			// Check if the neighbor is within bounds
+			if neighbor.X >= 0 && neighbor.X < cols && neighbor.Y >= 0 && neighbor.Y < rows {
+				// Check if the neighbor has been visited
+				if !visited[neighbor] && matrix[current.Y][current.X] == matrix[neighbor.Y][neighbor.X] {
+					// Mark the neighbor as visited and add to the queue
+					visited[neighbor] = true
+					queue.Enqueue(neighbor)
+					area++ //Increment the area for every unique cell visited on this search
+				} else if matrix[current.Y][current.X] != matrix[neighbor.Y][neighbor.X] {
+					// If the neighbor has a different value, it's part of the perimeter
+					//Check for corner: rotate 90deg, if neighbor & not in diagonal (sum of orig + rotated direc), then not corner
+					//rotate 90deg
+					rotate90 := Coordinate{X: d.Y, Y: -d.X}
+					diagonal := Coordinate{X: current.X + d.X, Y: current.Y + d.Y}
+
+					perimeter++
+				}
+			} else {
+				//if not in bounds, it means it is part of the perimeter
+				perimeter++
+			}
+		}
+	}
+
+	// Calculate and return the price (perimeter * area)
+	price := perimeter * area
+	return price
+}
