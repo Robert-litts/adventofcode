@@ -62,11 +62,11 @@ func Part1(inputFile string) error {
 		}
 		// Increment count after processing
 		count++
-		//fmt.Println("incrementing count")
+
 		if parse {
-			// Solve equation here (placeholder for actual logic)
+			//Solve after processing the A/B/Prize Lines
 			fmt.Println("solving system of equations for :", aX, bX, aY, bY, X, Y)
-			A := (X*bY - Y*aY) / (aX*bY - aY*bX) //Cramer's Rule, thanks Kristy!
+			A := (X*bY - Y*aY) / (aX*bY - aY*bX) //Cramer's Rule, thanks Kristy! https://www.cuemath.com/algebra/cramers-rule/
 			B := (Y*aX - X*bX) / (aX*bY - aY*bX)
 			fmt.Println("A: ", A)
 			fmt.Println("B: ", B)
