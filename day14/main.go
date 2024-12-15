@@ -47,9 +47,15 @@ func Part1(inputFile string) error {
 	quadTR := 0
 	quadBL := 0
 	quadBR := 0
-	minSafety := math.MaxFloat64 // Start with a very high value to ensure any safety value will be smaller
+	//minSafety := math.MaxFloat64 // Start with a very high value to ensure any safety value will be smaller
 	//lowestIndex := -1
 	nonSafe := 0
+
+	file, err := os.Create("output.txt")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+	}
+	defer file.Close()
 
 	lines := strings.Split(contents, "\n")
 
@@ -73,13 +79,17 @@ func Part1(inputFile string) error {
 	// 	fmt.Println(robots.Robots[bots].vX, robots.Robots[bots].vY)
 	// }
 
-	//fmt.Println("Initial Matrix")
-	//matrix := makeMatrix(width, height, &robots)
+	// fmt.Println("Initial Matrix")
+	// matrix := makeMatrix(width, height, &robots)
 	// for _, char := range matrix {
 	// 	fmt.Println(char)
 	// }
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 10000; i++ {
 		nonSafe = 0
+		quadBL = 0
+		quadBR = 0
+		quadTL = 0
+		quadTR = 0
 
 		//safety := 0
 		for bots := range len(robots.Robots) {
@@ -126,13 +136,16 @@ func Part1(inputFile string) error {
 			}
 
 		}
-		fmt.Printf("Matrix after %d seconds \n", i)
-		//matrix = makeMatrix(width, height, &robots)
+		// fmt.Printf("Matrix after %d seconds \n", i)
+		// matrix = makeMatrix(width, height, &robots)
 		// for _, char := range matrix {
 		// 	fmt.Println(char)
 
 		// }
 		safety = quadTL * quadTR * quadBL * quadBR
+		if i == 99 {
+			fmt.Println("Part 1 Answer: ", safety)
+		}
 		// if float64(safety) < minSafety {
 		// 	minSafety = float64(safety)
 		// 	//lowestIndex = i // Update the index where the lowest safety occurs
@@ -145,27 +158,29 @@ func Part1(inputFile string) error {
 		// fmt.Println("Quadrant TR: ", quadTR)
 		// fmt.Println("Quadrant BL: ", quadBL)
 		// fmt.Println("Quadrant BR: ", quadBR)
-		fmt.Println("Non Safe: ", nonSafe)
-		if nonSafe > 20 {
+
+		//Part 2, find the "Christmas Tree"
+		//Tuned so that if 25 or more robots are in a non-safe quadrant, print the matrix,
+		//Out of 10,500 tries, result is 2 images (one is correct)
+		//Correct answer will be i+1 (since using 0 index for loop)
+		if nonSafe > 25 {
+			fmt.Println("High NonSafe Score: ", i+1, ",Writing to file")
 			matrix := makeMatrix(width, height, &robots)
+			_, err := fmt.Fprintf(file, " %d Seconds: \n", i+1)
+			if err != nil {
+				fmt.Println("Error writing to file:", err)
+			}
 			for _, char := range matrix {
-				fmt.Println(char)
+				//fmt.Println(char)
+
+				_, err := fmt.Fprintln(file, char)
+				if err != nil {
+					fmt.Println("Error writing to file:", err)
+				}
 			}
 
 		}
 
-		if float64(safety) < minSafety {
-			minSafety = float64(safety)
-
-			fmt.Println("Safety: ", safety)
-			fmt.Println("Lowest:", minSafety)
-
-			quadBL = 0
-			quadBR = 0
-			quadTL = 0
-			quadTR = 0
-
-		}
 	}
 	// fmt.Println("Quadrant TL: ", quadTL)
 	// fmt.Println("Quadrant TR: ", quadTR)
