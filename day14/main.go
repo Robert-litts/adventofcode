@@ -17,11 +17,7 @@ func main() {
 		fmt.Println("Error in Part 2:", err)
 		return
 	}
-	// fmt.Println("Running Part 2:")
-	// if err := Part2(*inputFile); err != nil {
-	// 	fmt.Println("Error in Part 2:", err)
-	// 	return
-	// }
+
 }
 
 func Part1(inputFile string) error {
@@ -32,23 +28,20 @@ func Part1(inputFile string) error {
 	//result := 0
 	var vX, vY, x, y int
 	robots := Robots{}
-	width := 101
-	midWidth := math.Ceil(float64(width)/2) - 1
-
+	width := 101 //set width per instructions
 	height := 103
+	//Mid used for tracking safe/unsafe areas
+	midWidth := math.Ceil(float64(width)/2) - 1
 	midHeight := math.Ceil(float64(height)/2) - 1
-
-	//for _, line := range strings.Split(string(bytes), "\n") {
 
 	contents := string(bytes)
 	safety := 0
-	//lowest := 0
+	//Track robots found in each of the 4 quadrants
 	quadTL := 0
 	quadTR := 0
 	quadBL := 0
 	quadBR := 0
-	//minSafety := math.MaxFloat64 // Start with a very high value to ensure any safety value will be smaller
-	//lowestIndex := -1
+	//Track how many found "in the middle", for Part 2
 	nonSafe := 0
 
 	file, err := os.Create("output.txt")
@@ -72,12 +65,7 @@ func Part1(inputFile string) error {
 		robot := Robot{X: x, Y: y, vX: vX, vY: vY}
 		robots.Robots = append(robots.Robots, robot)
 
-		// Display result (if needed)
-		//fmt.Println("Result:", result)
 	}
-	// for bots := range len(robots.Robots) {
-	// 	fmt.Println(robots.Robots[bots].vX, robots.Robots[bots].vY)
-	// }
 
 	// fmt.Println("Initial Matrix")
 	// matrix := makeMatrix(width, height, &robots)
@@ -146,18 +134,6 @@ func Part1(inputFile string) error {
 		if i == 99 {
 			fmt.Println("Part 1 Answer: ", safety)
 		}
-		// if float64(safety) < minSafety {
-		// 	minSafety = float64(safety)
-		// 	//lowestIndex = i // Update the index where the lowest safety occurs
-		// 	fmt.Println("Safety decreased at second:", i)
-		// 	fmt.Println("Safety:", safety)
-		// 	fmt.Println("Lowest:", minSafety)
-		// }
-
-		// fmt.Println("Quadrant TL: ", quadTL)
-		// fmt.Println("Quadrant TR: ", quadTR)
-		// fmt.Println("Quadrant BL: ", quadBL)
-		// fmt.Println("Quadrant BR: ", quadBR)
 
 		//Part 2, find the "Christmas Tree"
 		//Tuned so that if 25 or more robots are in a non-safe quadrant, print the matrix,
@@ -182,80 +158,11 @@ func Part1(inputFile string) error {
 		}
 
 	}
-	// fmt.Println("Quadrant TL: ", quadTL)
-	// fmt.Println("Quadrant TR: ", quadTR)
-	// fmt.Println("Quadrant BL: ", quadBL)
-	// fmt.Println("Quadrant BR: ", quadBR)
-	// safety = quadTL * quadTR * quadBL * quadBR
 
 	fmt.Println("Safety: ", safety)
 	return nil
 
 }
-
-// func Part2(inputFile string) error {
-// 	bytes, err := os.ReadFile(inputFile)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	var result float64
-// 	contents := string(bytes)
-// 	var aX, aY, bX, bY, X, Y float64
-// 	offset := float64(10000000000000) //Part 2 offset, added to X & Y in the system of equations
-
-// 	lines := strings.Split(contents, "\n")
-// 	count := 0
-
-// 	// Iterate through lines in blocks of 3
-// 	for i := 0; i < len(lines); i++ {
-// 		parse := false
-// 		line := strings.TrimSpace(lines[i]) // Remove spaces
-
-// 		// Skip empty
-// 		if line == "" {
-// 			continue
-// 		}
-
-// 		switch count % 3 {
-// 		case 0: // Button A line
-// 			if n, err := fmt.Sscanf(line, "Button A: X+%f, Y+%f", &aX, &bX); err == nil && n == 2 {
-
-// 			}
-// 		case 1: // Button B line
-// 			if n, err := fmt.Sscanf(line, "Button B: X+%f, Y+%f", &aY, &bY); err == nil && n == 2 {
-
-// 			}
-// 		case 2: // Prize line
-// 			if n, err := fmt.Sscanf(line, "Prize: X=%f, Y=%f", &X, &Y); err == nil && n == 2 {
-// 				X += offset //Part 2 offset, added to X & Y in the system of equations
-// 				Y += offset
-
-// 				parse = true
-
-// 			}
-// 		}
-// 		// Increment count after processing
-// 		count++
-
-// 		if parse {
-// 			//Solve after processing the A/B/Prize Lines
-// 			fmt.Println("solving system of equations for :", aX, bX, aY, bY, X, Y)
-// 			A := (X*bY - Y*aY) / (aX*bY - aY*bX) //Cramer's Rule, thanks Kristy! https://www.cuemath.com/algebra/cramers-rule/
-// 			B := (Y*aX - X*bX) / (aX*bY - aY*bX)
-// 			fmt.Println("A: ", A)
-// 			fmt.Println("B: ", B)
-// 			//Part 2 change, remove the limit to 100 presses per A/B
-// 			if A >= 0 && B >= 0 && A == float64(int64(A)) && B == float64(int64(B)) {
-// 				result += A*3 + B
-// 			}
-
-// 		}
-// 	}
-
-// 	// Display result (if needed)
-// 	fmt.Println("Result:", result)
-// 	return nil
-// }
 
 func makeMatrix(width, height int, robots *Robots) [][]string {
 	var matrix [][]string
