@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	var inputFile = flag.String("inputFile", "../input/day14.example", "Relative file path to use as input.")
+	var inputFile = flag.String("inputFile", "../input/day14.input", "Relative file path to use as input.")
 	flag.Parse()
 	fmt.Println("Running Part 1:")
 	if err := Part1(*inputFile); err != nil {
@@ -31,12 +32,23 @@ func Part1(inputFile string) error {
 	//result := 0
 	var vX, vY, x, y int
 	robots := Robots{}
-	width := 11
-	height := 7
+	width := 101
+	midWidth := math.Ceil(float64(width)/2) - 1
+
+	height := 103
+	midHeight := math.Ceil(float64(height)/2) - 1
 
 	//for _, line := range strings.Split(string(bytes), "\n") {
 
 	contents := string(bytes)
+	safety := 0
+	//lowest := 0
+	quadTL := 0
+	quadTR := 0
+	quadBL := 0
+	quadBR := 0
+	minSafety := math.MaxFloat64 // Start with a very high value to ensure any safety value will be smaller
+	//lowestIndex := -1
 
 	lines := strings.Split(contents, "\n")
 
@@ -60,31 +72,53 @@ func Part1(inputFile string) error {
 	// 	fmt.Println(robots.Robots[bots].vX, robots.Robots[bots].vY)
 	// }
 
-	fmt.Println("Initial Matrix")
+	//fmt.Println("Initial Matrix")
 	matrix := makeMatrix(width, height, &robots)
-	for _, char := range matrix {
-		fmt.Println(char)
-	}
-	for i := 0; i < 6; i++ {
+	// for _, char := range matrix {
+	// 	fmt.Println(char)
+	// }
+	for i := 0; i < 100; i++ {
+
+		//safety := 0
 		for bots := range len(robots.Robots) {
-			fmt.Printf("Moving robot: %d X, %d Y, %d vX, %d vY \n", robots.Robots[bots].X, robots.Robots[bots].Y, robots.Robots[bots].vX, robots.Robots[bots].vY)
 			newX := robots.Robots[bots].X + robots.Robots[bots].vX
 			newY := robots.Robots[bots].Y + robots.Robots[bots].vY
-			if newX >= width {
-				newX = width - newX
-			}
-			if newX < 0 {
-				newX = newX + width
-			}
 
-			if newY >= height {
-				newY = height - newY
-			}
-			if newY < 0 {
-				newY = newY + height
-			}
+			//fmt.Printf("new X: %d, new Y: %d, height: %d, width: %d \n", newX, newY, height, width)
+
+			// Wrap the X position within the width
+			newX = (newX + width) % width
+
+			// Wrap the Y position within the height
+			newY = (newY + height) % height
+
+			// Update the robot's coordinates
 			robots.Robots[bots].X = newX
 			robots.Robots[bots].Y = newY
+			//fmt.Printf("X: %d, Y: %d, Midwidth: %f, Midheight: %f \n", robots.Robots[bots].X, robots.Robots[bots].Y, midWidth, midHeight)
+			if robots.Robots[bots].X >= 0 && robots.Robots[bots].Y >= 0 {
+				if robots.Robots[bots].X < int(midWidth) && robots.Robots[bots].Y < int(midHeight) {
+					quadTL++
+					//fmt.Printf("TL Added, Robot %d: X=%d, Y=%d\n", bots, robots.Robots[bots].X, robots.Robots[bots].Y)
+
+				}
+				if robots.Robots[bots].X > int(midWidth) && robots.Robots[bots].Y < int(midHeight) {
+					quadTR++
+					//fmt.Printf("TR Added, Robot %d: X=%d, Y=%d\n", bots, robots.Robots[bots].X, robots.Robots[bots].Y)
+
+				}
+				if robots.Robots[bots].X > int(midWidth) && robots.Robots[bots].Y > int(midHeight) {
+					quadBR++
+					//fmt.Printf("BR, Robot %d: X=%d, Y=%d\n", bots, robots.Robots[bots].X, robots.Robots[bots].Y)
+
+				}
+				if robots.Robots[bots].X < int(midWidth) && robots.Robots[bots].Y > int(midHeight) {
+					quadBL++
+					//fmt.Printf("BL, Robot %d: X=%d, Y=%d\n", bots, robots.Robots[bots].X, robots.Robots[bots].Y)
+
+				}
+
+			}
 
 		}
 		fmt.Printf("Matrix after %d seconds \n", i)
@@ -93,9 +127,35 @@ func Part1(inputFile string) error {
 			fmt.Println(char)
 
 		}
+		safety = quadTL * quadTR * quadBL * quadBR
+		if float64(safety) < minSafety {
+			minSafety = float64(safety)
+			//lowestIndex = i // Update the index where the lowest safety occurs
+			fmt.Println("Safety decreased at second:", i)
+			fmt.Println("Safety:", safety)
+			fmt.Println("Lowest:", minSafety)
+		}
+
+		// fmt.Println("Quadrant TL: ", quadTL)
+		// fmt.Println("Quadrant TR: ", quadTR)
+		// fmt.Println("Quadrant BL: ", quadBL)
+		// fmt.Println("Quadrant BR: ", quadBR)
+		fmt.Println("Safety: ", safety)
+		fmt.Println("Lowest:", minSafety)
+
+		quadBL = 0
+		quadBR = 0
+		quadTL = 0
+		quadTR = 0
 
 	}
+	// fmt.Println("Quadrant TL: ", quadTL)
+	// fmt.Println("Quadrant TR: ", quadTR)
+	// fmt.Println("Quadrant BL: ", quadBL)
+	// fmt.Println("Quadrant BR: ", quadBR)
+	// safety = quadTL * quadTR * quadBL * quadBR
 
+	fmt.Println("Safety: ", safety)
 	return nil
 
 }
