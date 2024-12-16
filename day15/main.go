@@ -68,14 +68,14 @@ func isValidMove(loc Coordinate, matrix [][]string, maxX, maxY int) (bool, bool)
 	// Check if the position is blocked ("#")
 	isBlocked := false
 	if inBounds {
-		isBlocked = matrix[loc.Y][loc.X] == "#"
+		isBlocked = matrix[loc.Y][loc.X] == "#" || matrix[loc.Y][loc.X] == "O"
 	}
 
 	return inBounds, isBlocked
 }
 
 func main() {
-	var inputFile = flag.String("inputFile", "../input/day15.example", "Relative file path to use as input.")
+	var inputFile = flag.String("inputFile", "../input/day15.input", "Relative file path to use as input.")
 	flag.Parse()
 	start := time.Now()
 	fmt.Println("Running Part 1:")
@@ -114,13 +114,18 @@ func Part1(inputFile string) error {
 	// dirRight := false
 
 	var visited Visited
-	newLoc
+	newLoc := guardLoc
 	visited.Points = append(visited.Points, guardLoc) // Add the starting point to visited
 
 	moveUp := Coordinate{X: 0, Y: -1}
 	moveDown := Coordinate{X: 0, Y: 1}
 	moveLeft := Coordinate{X: -1, Y: 0}
 	moveRight := Coordinate{X: 1, Y: 0}
+	movesMap := make(map[string]Coordinate)
+	movesMap["^"] = moveUp
+	movesMap["v"] = moveDown
+	movesMap["<"] = moveLeft
+	movesMap[">"] = moveRight
 
 	// Determine the number of rows and columns
 	y := len(matrix) // number of rows, "Height", "Y"
@@ -130,426 +135,95 @@ func Part1(inputFile string) error {
 	for i := 0; i < y; i++ {
 		fmt.Println(matrix[i])
 	}
+	foundCrate := false
+	//newMove := false
+	for i := 0; i < len(moves); i++ {
+		fmt.Println("Current Move: ", moves[i])
 
-	for i := range moves {
 		if moves[i] == "^" {
-			newLoc = guardLoc.add(moveUp)
+			newLoc = newLoc.Add(moveUp)
+			visited.Points = append(visited.Points, newLoc)
 		} else if moves[i] == "v" {
-			newLoc = guardLoc.add(moveDown)
+			newLoc = newLoc.Add(moveDown)
 			visited.Points = append(visited.Points, newLoc)
 		} else if moves[i] == "<" {
-			newLoc = guardLoc.add(moveLeft)
+			newLoc = newLoc.Add(moveLeft)
 			visited.Points = append(visited.Points, newLoc)
 		} else if moves[i] == ">" {
-			newLoc = guardLoc.add(moveRight)
+			newLoc = newLoc.Add(moveRight)
 			visited.Points = append(visited.Points, newLoc)
 		}
+		fmt.Println("New location: ", newLoc)
+		for {
+			// Check if the location is inbounds and not blocked
+			inBounds, isBlocked := isValidMove(newLoc, matrix, y, len(matrix[0]))
+
+			//First Case: Free Space -- move guard only
+			if inBounds && !isBlocked {
+				fmt.Printf("Moving %s to: %d, %d\n", moves[i], newLoc.X, newLoc.Y)
+				matrix[guardLoc.Y][guardLoc.X] = "."        //Make Guard's previous position a "."
+				guardLoc = guardLoc.Add(movesMap[moves[i]]) //move guard to next position
+
+				matrix[guardLoc.Y][guardLoc.X] = "@" // Move guard on the matrix
+				//Move crate to newLoc
+				if foundCrate {
+					matrix[newLoc.Y][newLoc.X] = "O" //Move crate to new open position
+					foundCrate = false
+
+				}
+				newLoc = guardLoc //reset to guard's location
+
+				visited.Points = append(visited.Points, newLoc)
+				//newMove = true //get new move
+
+				break
+
+				//if blocked, could be either # (wall) or O Crate
+			}
+
+			//Second Case: Wall, get new move
+			if inBounds && isBlocked && matrix[newLoc.Y][newLoc.X] == "#" {
+				fmt.Println("Blocked by wall, getting new move")
+				newLoc = guardLoc //Reached a wall, reset newLoc back to GuardLoc
+				break
+			}
+
+			//Third case - Crate, check next position in same direction
+			if inBounds && isBlocked && matrix[newLoc.Y][newLoc.X] == "O" { //reached a crate, need to check if we can move the crate
+				fmt.Printf("Space blocked from moving %s from %d, %d to: %d, %d, there is a %s in the way\n",
+					moves[i], guardLoc.X, guardLoc.Y, newLoc.X, newLoc.Y, matrix[newLoc.Y][newLoc.X]) // Check if we can move the crate to the new location
+				// If yes, move the crate and update the guard's position
+				// If no, get new move and update guardLoc
+				newLoc = newLoc.Add(movesMap[moves[i]]) // Check the next spot in the same direction as the guard's movement
+				fmt.Println("BLOCKED by CRATE, Checking new Location: ", newLoc)
+				foundCrate = true
+
+				continue
+			}
+
+		}
+		//For debugging, print every updated matrix
+		// y = len(matrix)
+		// for j := 0; j < y; j++ {
+		// 	fmt.Println(matrix[j])
+		// }
 	}
 
-	// for {
-	// 	if inside {
-
-	// 		// Movement logic
-	// 		if dirUp {
-	// 			newLoc := guardLoc.Add(moveUp)
-
-	// 			inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-	// 			if inBounds && !isBlocked {
-	// 				//fmt.Printf("Moving up to: %d, %d\n", newLoc.X, newLoc.Y)
-	// 				//fmt.Println("Next Spot Contains : ", matrix[newLoc.X][newLoc.Y])
-	// 				guardLoc = newLoc
-	// 				visited.AddPoint(newLoc)
-	// 			} else if isBlocked {
-	// 				//fmt.Println("Blocked by an obstacle.")
-	// 				dirUp = false
-	// 				dirRight = true
-	// 			} else if !inBounds {
-	// 				fmt.Println("Move is out of bounds.")
-
-	// 				dirUp = false
-	// 				dirLeft = false
-	// 				dirRight = false
-	// 				dirLeft = false
-	// 				inside = false
-	// 				break
-	// 			}
-	// 		} else if dirDown {
-	// 			newLoc := guardLoc.Add(moveDown)
-	// 			inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-	// 			if inBounds && !isBlocked {
-	// 				//fmt.Printf("Moving down to: %d, %d\n", newLoc.X, newLoc.Y)
-	// 				guardLoc = newLoc
-	// 				visited.AddPoint(newLoc)
-	// 			} else if isBlocked {
-	// 				//fmt.Println("Blocked by an obstacle.")
-	// 				dirDown = false
-	// 				dirLeft = true
-	// 			} else if !inBounds {
-	// 				fmt.Println("Move is out of bounds.")
-	// 				dirUp = false
-	// 				dirLeft = false
-	// 				dirRight = false
-	// 				dirLeft = false
-	// 				inside = false
-	// 				break
-	// 			}
-	// 		} else if dirLeft {
-	// 			newLoc := guardLoc.Add(moveLeft)
-	// 			inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-	// 			if inBounds && !isBlocked {
-	// 				//fmt.Printf("Moving left to: %d, %d\n", newLoc.X, newLoc.Y)
-	// 				guardLoc = newLoc
-	// 				visited.AddPoint(newLoc)
-	// 			} else if isBlocked {
-	// 				//fmt.Println("Blocked by an obstacle.")
-	// 				dirLeft = false
-	// 				dirUp = true
-	// 			} else if !inBounds {
-	// 				fmt.Println("Move is out of bounds.")
-	// 				dirUp = false
-	// 				dirLeft = false
-	// 				dirRight = false
-	// 				dirLeft = false
-	// 				inside = false
-	// 				break
-	// 			}
-	// 		} else if dirRight {
-	// 			newLoc := guardLoc.Add(moveRight)
-	// 			inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-	// 			if inBounds && !isBlocked {
-	// 				//fmt.Printf("Moving right to: %d, %d\n", newLoc.X, newLoc.Y)
-	// 				guardLoc = newLoc
-	// 				visited.AddPoint(newLoc)
-	// 			} else if isBlocked {
-	// 				//fmt.Println("Blocked by an obstacle.")
-	// 				dirRight = false
-	// 				dirDown = true
-	// 			} else if !inBounds {
-	// 				fmt.Println("Move is out of bounds.")
-	// 				dirUp = false
-	// 				dirLeft = false
-	// 				dirRight = false
-	// 				dirLeft = false
-	// 				inside = false
-	// 				break
-	// 			}
-	// 		}
-
-	// 	} else {
-	// 		break
-	// 	}
-	// }
-
-	// score = len(visited.Points)
-	// fmt.Println(visited.Points)
+	gps := 0
+	for rowIndex, row := range matrix {
+		for colIndex, cell := range row {
+			for _, char := range cell {
+				if string(char) == "O" {
+					gps += rowIndex*100 + colIndex //Calculate GPS position
+				}
+			}
+		}
+	}
 	fmt.Printf("Final Guard Location: %d, %d\n", guardLoc.X, guardLoc.Y)
 	fmt.Println("Score:", score)
+	fmt.Println("GPS: ", gps)
 	return nil
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-// func Part2(inputFile string) error {
-// 	score := 0
-// 	bytes, err := os.ReadFile(inputFile)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// makeMatrix function will create the matrix from the input
-// 	matrix, guardLoc, err := makeMatrix(bytes)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	start := guardLoc
-
-// 	fmt.Println("Guard Starting at :", guardLoc)
-// 	inside := true
-// 	dirUp := true
-// 	dirDown := false
-// 	dirLeft := false
-// 	dirRight := false
-
-// 	var visited Visited
-// 	visited.Points = append(visited.Points, guardLoc) // Add the starting point to visited
-
-// 	moveUp := Coordinate{X: 0, Y: -1, Dir: "U"}
-// 	moveDown := Coordinate{X: 0, Y: 1, Dir: "D"}
-// 	moveLeft := Coordinate{X: -1, Y: 0, Dir: "L"}
-// 	moveRight := Coordinate{X: 1, Y: 0, Dir: "R"}
-
-// 	// Determine the number of rows and columns
-// 	y := len(matrix)    // number of rows, "Height", "Y"
-// 	x := len(matrix[0]) // number of columns (assuming all rows are the same length), "Width"
-
-// 	// Print the matrix for debugging purposes (uncomment to see the map)
-// 	// for i := 0; i < y; i++ {
-// 	// 	fmt.Println(matrix[i])
-// 	// }
-
-// 	for {
-// 		if inside {
-
-// 			// Movement logic
-// 			if dirUp {
-// 				newLoc := guardLoc.Add(moveUp)
-// 				inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 				if inBounds && !isBlocked {
-// 					//fmt.Printf("Moving up to: %d, %d\n", newLoc.X, newLoc.Y)
-// 					//fmt.Println("Next Spot Contains : ", matrix[newLoc.X][newLoc.Y])
-// 					guardLoc = newLoc
-// 					visited.AddPoint(newLoc)
-// 				} else if isBlocked {
-// 					//fmt.Println("Blocked by an obstacle.")
-// 					dirUp = false
-// 					dirRight = true
-// 				} else if !inBounds {
-// 					fmt.Println("Move is out of bounds.")
-
-// 					dirUp = false
-// 					dirLeft = false
-// 					dirRight = false
-// 					dirLeft = false
-// 					inside = false
-// 					break
-// 				}
-// 			} else if dirDown {
-// 				newLoc := guardLoc.Add(moveDown)
-// 				inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 				if inBounds && !isBlocked {
-// 					//fmt.Printf("Moving down to: %d, %d\n", newLoc.X, newLoc.Y)
-// 					guardLoc = newLoc
-// 					visited.AddPoint(newLoc)
-// 				} else if isBlocked {
-// 					//fmt.Println("Blocked by an obstacle.")
-// 					dirDown = false
-// 					dirLeft = true
-// 				} else if !inBounds {
-// 					fmt.Println("Move is out of bounds.")
-// 					dirUp = false
-// 					dirLeft = false
-// 					dirRight = false
-// 					dirLeft = false
-// 					inside = false
-// 					break
-// 				}
-// 			} else if dirLeft {
-// 				newLoc := guardLoc.Add(moveLeft)
-// 				inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 				if inBounds && !isBlocked {
-// 					//fmt.Printf("Moving left to: %d, %d\n", newLoc.X, newLoc.Y)
-// 					guardLoc = newLoc
-// 					visited.AddPoint(newLoc)
-// 				} else if isBlocked {
-// 					//fmt.Println("Blocked by an obstacle.")
-// 					dirLeft = false
-// 					dirUp = true
-// 				} else if !inBounds {
-// 					fmt.Println("Move is out of bounds.")
-// 					dirUp = false
-// 					dirLeft = false
-// 					dirRight = false
-// 					dirLeft = false
-// 					inside = false
-// 					break
-// 				}
-// 			} else if dirRight {
-// 				newLoc := guardLoc.Add(moveRight)
-// 				inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 				if inBounds && !isBlocked {
-// 					//fmt.Printf("Moving right to: %d, %d\n", newLoc.X, newLoc.Y)
-// 					guardLoc = newLoc
-// 					visited.AddPoint(newLoc)
-// 				} else if isBlocked {
-// 					//fmt.Println("Blocked by an obstacle.")
-// 					dirRight = false
-// 					dirDown = true
-// 				} else if !inBounds {
-// 					fmt.Println("Move is out of bounds.")
-// 					dirUp = false
-// 					dirLeft = false
-// 					dirRight = false
-// 					dirLeft = false
-// 					inside = false
-// 					break
-// 				}
-// 			}
-
-// 		} else {
-// 			break
-// 		}
-// 	}
-
-// 	//Loop through all the points the guard will visit
-// 	for _, point := range visited.Points {
-// 		// if point.X == newLoc.X && point.Y == newLoc.Y {
-// 		// 	found = true
-// 		// 	break
-// 		// }
-
-// 		var visitedLoop Visited
-
-// 		//skip the starting location
-// 		if point.X == start.X && point.Y == start.Y {
-// 			continue
-// 		}
-// 		//Add obstruction to matrix
-// 		matrix[point.Y][point.X] = "#"
-// 		guardLoc = start //reset guard to the starting point
-// 		//reset all logic
-// 		inside := true
-// 		dirUp := true
-// 		dirDown := false
-// 		dirLeft := false
-// 		dirRight := false
-
-// 		//Rerun the matrix with the new obstruction
-// 		for {
-// 			if inside {
-
-// 				// Movement logic
-// 				if dirUp {
-// 					newLoc := guardLoc.Add(moveUp)
-
-// 					inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 					if inBounds && !isBlocked {
-// 						//fmt.Printf("Moving up to: %d, %d\n", newLoc.X, newLoc.Y)
-// 						//fmt.Println("Next Spot Contains : ", matrix[newLoc.X][newLoc.Y])
-// 						guardLoc = newLoc
-// 						loop := visitedLoop.CheckDir(newLoc)
-// 						if loop {
-// 							//fmt.Println("Loop detected.")
-// 							score++
-// 							dirUp = false
-// 							dirLeft = false
-// 							dirRight = false
-// 							dirLeft = false
-// 							inside = false
-// 							break
-// 						}
-// 					} else if isBlocked {
-// 						//fmt.Println("Blocked by an obstacle.")
-// 						dirUp = false
-// 						dirRight = true
-// 					} else if !inBounds {
-// 						//fmt.Println("Move is out of bounds.")
-
-// 						dirUp = false
-// 						dirLeft = false
-// 						dirRight = false
-// 						dirLeft = false
-// 						inside = false
-// 						break
-// 					}
-// 				} else if dirDown {
-// 					newLoc := guardLoc.Add(moveDown)
-// 					inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 					if inBounds && !isBlocked {
-// 						//fmt.Printf("Moving down to: %d, %d\n", newLoc.X, newLoc.Y)
-// 						guardLoc = newLoc
-// 						loop := visitedLoop.CheckDir(newLoc)
-// 						if loop {
-// 							//fmt.Println("Loop detected.")
-// 							score++
-// 							dirUp = false
-// 							dirLeft = false
-// 							dirRight = false
-// 							dirLeft = false
-// 							inside = false
-// 							break
-// 						}
-// 					} else if isBlocked {
-// 						//fmt.Println("Blocked by an obstacle.")
-// 						dirDown = false
-// 						dirLeft = true
-// 					} else if !inBounds {
-// 						//fmt.Println("Move is out of bounds.")
-// 						dirUp = false
-// 						dirLeft = false
-// 						dirRight = false
-// 						dirLeft = false
-// 						inside = false
-// 						break
-// 					}
-// 				} else if dirLeft {
-// 					newLoc := guardLoc.Add(moveLeft)
-// 					inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 					if inBounds && !isBlocked {
-// 						//fmt.Printf("Moving left to: %d, %d\n", newLoc.X, newLoc.Y)
-// 						guardLoc = newLoc
-// 						loop := visitedLoop.CheckDir(newLoc)
-// 						if loop {
-// 							//fmt.Println("Loop detected.")
-// 							score++
-// 							dirUp = false
-// 							dirLeft = false
-// 							dirRight = false
-// 							dirLeft = false
-// 							inside = false
-// 							break
-// 						}
-// 					} else if isBlocked {
-// 						//fmt.Println("Blocked by an obstacle.")
-// 						dirLeft = false
-// 						dirUp = true
-// 					} else if !inBounds {
-// 						//fmt.Println("Move is out of bounds.")
-// 						dirUp = false
-// 						dirLeft = false
-// 						dirRight = false
-// 						dirLeft = false
-// 						inside = false
-// 						break
-// 					}
-// 				} else if dirRight {
-// 					newLoc := guardLoc.Add(moveRight)
-// 					inBounds, isBlocked := isValidMove(newLoc, matrix, x, y)
-// 					if inBounds && !isBlocked {
-// 						//fmt.Printf("Moving right to: %d, %d\n", newLoc.X, newLoc.Y)
-// 						guardLoc = newLoc
-// 						loop := visitedLoop.CheckDir(newLoc)
-// 						if loop {
-// 							//fmt.Println("Loop detected.")
-// 							score++
-// 							dirUp = false
-// 							dirLeft = false
-// 							dirRight = false
-// 							dirLeft = false
-// 							inside = false
-// 							break
-// 						}
-// 					} else if isBlocked {
-// 						//fmt.Println("Blocked by an obstacle.")
-// 						dirRight = false
-// 						dirDown = true
-// 					} else if !inBounds {
-// 						//fmt.Println("Move is out of bounds.")
-// 						dirUp = false
-// 						dirLeft = false
-// 						dirRight = false
-// 						dirLeft = false
-// 						inside = false
-// 						break
-// 					}
-// 				}
-
-// 			} else {
-// 				break
-// 			}
-// 		}
-// 		//Reset point to dot
-// 		//fmt.Println("Resetting Matrix")
-// 		matrix[point.Y][point.X] = "."
-
-// 	}
-
-// 	//score = len(visited.Points)
-// 	//mt.Println(visited.Points)
-// 	fmt.Printf("Final Guard Location: %d, %d\n", guardLoc.X, guardLoc.Y)
-// 	fmt.Println("Score P2: ", score)
-// 	return nil
-// }
 
 // makeMatrix takes the byte slice, splits it into lines and converts it into a matrix of strings.
 func makeMatrix(bytes []byte) ([][]string, []string, Coordinate, error) {
