@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	var inputFile = flag.String("inputFile", "../input/day16.example2", "Relative file path to use as input.")
+	var inputFile = flag.String("inputFile", "../input/day16.input", "Relative file path to use as input.")
 	flag.Parse()
 	start := time.Now()
 	fmt.Println("Running Part 1:")
@@ -45,25 +45,9 @@ func Part1(inputFile string) error {
 
 	fmt.Println("Start: ", start)
 	fmt.Println("End: ", end)
-	//fmt.Println("Node Count: ", len(nodeMap.List))
-
-	// //Conduct breadth first search from each of the 0 positions on the map
-	// for rows := range len(zeros) {
-	// 	summitsP1 := BFS1(matrix, zeros[rows].row, zeros[rows].col)
-	// 	summitsP2 := BFS2(matrix, zeros[rows].row, zeros[rows].col)
-
-	// 	//fmt.Println("Summits from current run: ", summits)
-	// 	scoreP1 += summitsP1
-	// 	scoreP2 += summitsP2
-
-	// }
-
-	//distance := Dijkstra(matrix, start, end)
 	cost, steps := Dijkstra2(matrix, start, end)
 
-	//fmt.Println("Summits Visited: ", len(summits))
-	//fmt.Println("Score Part 1: ", distance)
-	fmt.Println("Cost for part 2: ", cost)
+	fmt.Println("Cost for part 1: ", cost)
 	fmt.Println("Steps Part 2: ", steps)
 	// fmt.Println("Total Steps: ", len(steps))
 	return nil
@@ -118,9 +102,9 @@ type Coordinate struct {
 }
 
 type State struct {
-	pos  Coordinate
-	cost int
-	dir  string
+	pos Coordinate
+	//cost int
+	dir string
 }
 
 type CoordParent struct {
@@ -129,12 +113,10 @@ type CoordParent struct {
 }
 
 type Reindeer struct {
-	x, y    int
-	cost    int
-	dir     string
-	prevDir string
-	parent  Coordinate
-	path    [][2]int
+	x, y int
+	cost int
+	dir  string
+	path [][2]int
 }
 
 func calcCost(curNodeDir string, currentDir string) int {
@@ -175,6 +157,7 @@ func (pq *PriorityQueue) Pop() interface{} {
 }
 
 // Dijkstra's algorithm implementation for finding the shortest path in a grid.
+// Part 1 implementation
 func Dijkstra(graph [][]string, start Coordinate, end Coordinate) int {
 	visited := make(map[Coordinate]int) //store visited nodes at their lowest cost
 
@@ -196,7 +179,7 @@ func Dijkstra(graph [][]string, start Coordinate, end Coordinate) int {
 		{0, 1}:  "Right",
 	}
 
-	startPos := Reindeer{x: start.X, y: start.Y, cost: 0, dir: directionsMap[directions[3]], prevDir: ""}
+	startPos := Reindeer{x: start.X, y: start.Y, cost: 0, dir: directionsMap[directions[3]]}
 	fmt.Println("starting at: ", startPos)
 
 	// Adding the current node to the queue
@@ -236,12 +219,10 @@ func Dijkstra(graph [][]string, start Coordinate, end Coordinate) int {
 				totalCost := cost + turnCost
 
 				newReindeer := &Reindeer{
-					x:       nr,
-					y:       nc,
-					cost:    totalCost,
-					dir:     currDirection,
-					prevDir: currNode.dir,
-				}
+					x:    nr,
+					y:    nc,
+					cost: totalCost,
+					dir:  currDirection}
 				heap.Push(&pq, newReindeer)
 			}
 		}
@@ -250,24 +231,13 @@ func Dijkstra(graph [][]string, start Coordinate, end Coordinate) int {
 }
 
 // Dijkstra's algorithm implementation for finding the shortest path in a grid.
+// Part 2 implementation, tracks the path traveled for every node & then finds the unique set of steps at the end
 func Dijkstra2(graph [][]string, start Coordinate, end Coordinate) (int, int) {
-	//visited := make(map[Coordinate]CoordParent) //store visited nodes at their lowest cost
 	visited := make(map[State]int)
-	//prevNode := Coordinate{}
-	//reindeers := make(map[Coordinate]*Reindeer)
 	bestScore := math.MaxInt32
-
 	// Creating a Queue variable to store nodes to be processed
 	var pq PriorityQueue
 	heap.Init(&pq)
-
-	// directions := [][2]int{
-	// 	{-1, 0}, // Up
-	// 	{1, 0},  // Down
-	// 	{0, -1}, // Left
-	// 	{0, 1},  // Right
-	// }
-
 	directions := []struct {
 		dx, dy int
 		name   string
@@ -278,27 +248,17 @@ func Dijkstra2(graph [][]string, start Coordinate, end Coordinate) (int, int) {
 		{0, 1, "Right"},
 	}
 
-	// directionsMap := map[[2]int]string{
-	// 	{-1, 0}: "Up",
-	// 	{1, 0}:  "Down",
-	// 	{0, -1}: "Left",
-	// 	{0, 1}:  "Right",
-	// }
-	// Pre-allocate the initial path slice - each position takes 2 integers
+	//Initial path stores the starting path for the graph
 	initialPath := make([][2]int, 0, len(graph)*len(graph[0])/2)
 	initialPath = append(initialPath, [2]int{start.X, start.Y})
-	startState := State{pos: Coordinate{X: start.X, Y: start.Y}, cost: 0, dir: "Right"}
-	startPos := Reindeer{x: start.X, y: start.Y, cost: 0, dir: "Right", prevDir: "", path: initialPath}
-	//reindeers[start] = &startPos
-	var tiles [][2]int //prevNode = Coordinate{X: start.X, Y: start.Y}
-	//visited[Coordinate{X: start.X, Y: start.Y}] = 0
+	startState := State{pos: Coordinate{X: start.X, Y: start.Y}, dir: "Right"}
+	startPos := Reindeer{x: start.X, y: start.Y, cost: 0, dir: "Right", path: initialPath}
+	var tiles [][2]int
 	fmt.Println("starting at: ", startPos)
 	visited[startState] = 0
-	//previous := make(map[State]State)
 
 	// Adding the current node to the queue
 	heap.Push(&pq, startPos)
-	//var bestPath []Coordinate
 
 	// Running a loop until the queue becomes empty
 	for pq.Len() > 0 {
@@ -307,12 +267,10 @@ func Dijkstra2(graph [][]string, start Coordinate, end Coordinate) (int, int) {
 			//currNode.path = nil
 			return bestScore, len(tiles)
 		}
-		//fmt.Println("Current Node: ", currNode)
-		//fmt.Println("Current Parent: ", currNode.parent)
-		//fmt.Println(currNode)
+
 		r := currNode.x
 		c := currNode.y
-		currState := State{Coordinate{r, c}, currNode.cost, currNode.dir}
+		currState := State{Coordinate{r, c}, currNode.dir}
 		//fmt.Println("Current Node: ", r, c)
 
 		// Skip if we have already visited this node from same dir with a lower cost
@@ -320,33 +278,19 @@ func Dijkstra2(graph [][]string, start Coordinate, end Coordinate) (int, int) {
 			continue //if we already visited as a lower cost, skip
 		}
 		if graph[r][c] == "E" {
-			//fmt.Println("Summit Found at :", r, c)
-			visited[State{Coordinate{r, c}, currNode.cost, currNode.dir}] = currNode.cost
-			//fmt.Println("End of Path Reached, Cost: ", currNode.cost)
-			//fmt.Println("Visited nodes: ", visited)
-			//fmt.Println("Visited count: ", len(visited))
-			//fmt.Println("Reindeers: ", len(reindeers))
-			// for coord := range reindeers {
-			// 	fmt.Println("Reindeer at: ", coord)
-			// 	fmt.Println("Reindeer parent: ", reindeers[coord].parent)
-			// }
-			//steps := countStepsToDestination(visited, Coordinate{r, c})
-			//steps := len(visited)
-			//fmt.Println("final Node path: ", currNode.path)
+			visited[State{Coordinate{r, c}, currNode.dir}] = currNode.cost
 
 			if currNode.cost < bestScore {
 				bestScore = currNode.cost
 				fmt.Println("New minimum score: ", bestScore)
-				fmt.Println("final Node path: ", currNode.path)
-				//bestPath = reconstructPath(previous, currState)
-				//fmt.Println("Best Path: ", bestPath)
+				// fmt.Println("final Node path: ", currNode.path)
 				tiles = currNode.path
+
 				continue
 
 			}
 			if currNode.cost == bestScore {
 				fmt.Println("final Node path: ", currNode.path)
-				//fmt.Println("Best Path: ", bestPath)
 				tiles = mergeTupleTiles(tiles, currNode.path)
 				continue
 
@@ -362,57 +306,38 @@ func Dijkstra2(graph [][]string, start Coordinate, end Coordinate) (int, int) {
 		// Mark the node as visited with the current cost
 		visited[currState] = currNode.cost
 
-		//basePath := make([]Coordinate, len(currNode.path), len(currNode.path)+1)
-		//copy(basePath, currNode.path)
-		//basePath := append(make([]Coordinate, len(currNode.path)), currNode.path...)
-		// Pre-allocate the new path slice with exact capacity needed
-		// basePath := make([][2]int, len(currNode.path), len(currNode.path)+1)
-		// copy(basePath, currNode.path)
+		// Explore the neighbors
 		for _, dir := range directions {
 			currDirection := dir.name
 			nr, nc := r+dir.dx, c+dir.dy
 			if 0 <= nr && nr < len(graph) && 0 <= nc && nc < len(graph[0]) && graph[nr][nc] != "#" {
-				// Calculate the new cost, based on the turning mechanism (step forward = 1, turn = 1000 + 1 for step)
+				// Calculate the new cost, based on the turning mechanism (step forward = 1, turn = 1000)
 				stepCost := 1
 				turnCost := calcTurnCost(currNode.dir, currDirection)
 				cost := currNode.cost + turnCost + stepCost
 
-				// newPath := append([]Coordinate(nil), currNode.path...) // Create a new slice with a copy of the current path
-				// newPath = append(newPath, Coordinate{X: nr, Y: nc})    // Append the new coordinate to the path
-
 				newState := State{
-					pos:  Coordinate{nr, nc},
-					dir:  dir.name,
-					cost: cost,
+					pos: Coordinate{nr, nc},
+					dir: dir.name,
 				}
-
-				//basePath = append(basePath, Coordinate{X: nr, Y: nc})
-
 				// Skip if we've seen this state with a better cost
 				if existingCost, exists := visited[newState]; exists && existingCost <= cost {
 					continue
 				}
 
-				//previous[newState] = currState
-				//newPath := append(basePath, Coordinate{X: nr, Y: nc})
 				newPath := append([][2]int(nil), currNode.path...) // Copy the existing path
 				newPath = append(newPath, [2]int{nr, nc})          // Append the new coordinate
 				//newPath := append(basePath, [2]int{nr, nc})
 
 				newReindeer := Reindeer{
-					x:       nr,
-					y:       nc,
-					cost:    cost,
-					dir:     currDirection,
-					prevDir: currNode.dir,
-					//parent:  Coordinate{r, c},
-					//path: append([]Coordinate(nil), currNode.path...),
+					x:    nr,
+					y:    nc,
+					cost: cost,
+					dir:  currDirection,
 					path: newPath,
 				}
-				//newReindeer.path = append(newReindeer.path, Coordinate{X: nr, Y: nc})
 				heap.Push(&pq, newReindeer)
-				//prevNode = Coordinate{r, c}
-				//reindeers[Coordinate{nr, nc}] = newReindeer
+
 			}
 		}
 
