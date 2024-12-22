@@ -1,3 +1,4 @@
 *.input
 .env
 *.example
+*.example[0-9]*
