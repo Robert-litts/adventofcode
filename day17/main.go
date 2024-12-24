@@ -3,13 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 func main() {
-	var inputFile = flag.String("inputFile", "../input/day17.example", "Relative file path to use as input.")
+	var inputFile = flag.String("inputFile", "../input/day17.input", "Relative file path to use as input.")
 	flag.Parse()
 	start := time.Now()
 	fmt.Println("Running Part 1:")
@@ -22,74 +24,65 @@ func main() {
 }
 
 func Part1(inputFile string) error {
-	//scoreP1 := 0
-	//pq := &Queue{}
+	regA := 0
+	regB := 0
+	regC := 0
+	program := []int{}
 	bytes, err := os.ReadFile(inputFile)
 	if err != nil {
 		return err
 	}
 
-	// makeMatrix function will create the matrix from the input
-	matrix, start, end, err := makeMatrix(bytes)
-	if err != nil {
-		return err
+	contents := string(bytes)
+
+	lines := strings.Split(contents, "\n")
+
+	// Iterate through lines in blocks of 3
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i]) // Remove spaces
+		if i < 3 {                          // Skip first 3 lines
+			fmt.Sscanf(line, "Register A: %d", &regA)
+			fmt.Sscanf(line, "Register B: %d", &regB)
+			fmt.Sscanf(line, "Register C: %d", &regC)
+		}
+
+		if line == "" {
+			continue
+		}
+		if i >= 3 { // Start reading the program
+			result := strings.Split(line, ":")
+			programString := strings.Split(result[1], ",")
+			for k := range len(programString) {
+				programString[k] = strings.TrimSpace(programString[k])
+				num, err := strconv.Atoi(programString[k])
+				if err != nil {
+					return err
+				}
+				program = append(program, num)
+			}
+
+		}
 	}
 
-	fmt.Println("Grid:")
-	for _, row := range matrix {
-		fmt.Println(row)
-	}
-
-	fmt.Println("Start: ", start)
-	fmt.Println("End: ", end)
+	fmt.Println("Program:", program)
+	fmt.Println("Registers:", regA, regB, regC)
 
 	return nil
 }
 
-func makeMatrix(bytes []byte) ([][]string, Coordinate, Coordinate, error) {
-	var matrix [][]string
-	contents := string(bytes)
-	lines := strings.Split(contents, "\n")
-	var start, end Coordinate
-	//var nodeCount int
+func adv(regA, comboOperand float64) (int, error) {
+	result := int(regA / (math.Pow(2, comboOperand)))
 
-	for rowIndex, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
+	return result, nil
 
-		// Row to hold the integers
-		row := make([]string, len(line))
-
-		for colIndex, c := range line {
-
-			// Assign the integer to the row
-			row[colIndex] = string(c)
-
-			// Check if the number is 0 and record the position
-			if string(c) == "S" {
-				start = Coordinate{X: rowIndex, Y: colIndex}
-				fmt.Println("Starting Position: ", start)
-
-			}
-
-			if string(c) == "E" {
-				end = Coordinate{X: rowIndex, Y: colIndex}
-				fmt.Println("Ending Position: ", end)
-			}
-
-		}
-
-		// Append the row to the matrix
-		matrix = append(matrix, row)
-	}
-
-	// Return the created matrix and the list of zero positions
-	return matrix, start, end, nil
 }
 
-// Struct to represent a coordinate on the grid. X and Y are integers.
-type Coordinate struct {
-	X int
-	Y int
+func bxl(regB, litOperand int) (int, error) {
+	result := regB ^ litOperand
+	return result, nil
+}
+
+func bst(comboOperand int) (int, error) {
+	result := comboOperand % 8
+	return result, nil
 }
