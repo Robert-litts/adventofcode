@@ -70,10 +70,24 @@ func Part1(inputFile string) error {
 	return nil
 }
 
-func adv(regA, comboOperand float64) (int, error) {
-	result := int(regA / (math.Pow(2, comboOperand)))
+func adv(regA, comboOperand int) (int, error) {
+	regA = int(float64(regA) / (math.Pow(2, float64(comboOperand))))
 
-	return result, nil
+	return regA, nil
+
+}
+
+func bdv(regA, regB, comboOperand int) (int, error) {
+	regB = int(float64(regA) / (math.Pow(2, float64(comboOperand))))
+
+	return regB, nil
+
+}
+
+func cdv(regA, regC, comboOperand int) (int, error) {
+	regC = int(float64(regA) / (math.Pow(2, float64(comboOperand))))
+
+	return regC, nil
 
 }
 
