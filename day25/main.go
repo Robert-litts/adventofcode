@@ -87,14 +87,11 @@ func Part1(inputFile string) error {
 
 // Determine if we are viewing a lock or key based on first line
 func lockOrKey(input string) string {
-	//Check if the input is a lock or a key
-	var lockorkey string
-	if input == "#####" {
-		lockorkey = "lock"
-	} else if input == "....." {
-		lockorkey = "key"
+	lockOrKeyMap := map[string]string{
+		"#####": "lock",
+		".....": "key",
 	}
-	return lockorkey
+	return lockOrKeyMap[input]
 }
 
 // Compare the keys and locks, if the sum of the keys and locks is greater than 5, then it is not valid
@@ -102,12 +99,9 @@ func compareKeys(keys, locks [5]int) bool {
 	//Compare the keys and locks
 
 	for i := 0; i < len(keys); i++ {
-		key := keys[i]
-		lock := locks[i]
-		if (key + lock) > 5 {
+		if (keys[i] + locks[i]) > 5 {
 			return false
 		}
-
 	}
 	return true
 }
