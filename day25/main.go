@@ -30,28 +30,21 @@ func Part1(inputFile string) error {
 	keys := make(map[int][5]int)
 	locks := make(map[int][5]int)
 	valid := 0
-	readLock := false
-	readKey := false
-	var lockkey string
 	contents := string(bytes)
 	lines := strings.Split(contents, "\n\n") //split on double newline to get each unique key or lock
 
 	for set, line := range lines { // this is each set of lock or key values, need to determine if key or lock
-		readKey, readLock = false, false
+		var readKey, readLock bool
 		nums := strings.Split(line, "\n")
+		lockkey := lockOrKey(nums[0])
+
+		if lockkey == "lock" {
+			readLock = true
+		} else if lockkey == "key" {
+			readKey = true
+		}
 		for idx, k := range nums { // this is each individual line within a lock or key.
-			if idx == 0 {
-				lockkey = lockOrKey(k)
-				if lockkey == "lock" {
-					readLock = true
-					readKey = false
-				} else if lockkey == "key" {
-					readLock = false
-					readKey = true
-				}
-			}
-			//Assign values to the 5 positions in the lock or key based on "#"
-			if idx > 0 && idx < 6 && (readKey || readLock) {
+			if idx > 0 && idx < 6 {
 				for p, each := range k {
 					if readLock && string(each) == "#" {
 						val := locks[set]
@@ -75,7 +68,6 @@ func Part1(inputFile string) error {
 		for key := range keys {
 			if compareKeys(locks[lock], keys[key]) {
 				valid++
-				fmt.Println("Lock: ", locks[lock], " Key: ", keys[key], " is valid")
 			}
 		}
 	}
