@@ -79,22 +79,24 @@ func Part1(inputFile string) error {
 			if isWithinGrid(neighbor1, rows, cols) && isWithinGrid(neighbor2, rows, cols) && matrix[neighbor1.Y][neighbor1.X] == "#" && NeighborInBasePath(neighbor2, basePath) && (matrix[neighbor2.Y][neighbor2.X] == "." || matrix[neighbor2.Y][neighbor2.X] == "E") {
 				//fmt.Println("Found a wall at:", neighbor1)
 
-				currentSteps, currentPath := BFS(matrix, neighbor2, end, visited)
-				//fmt.Println("Removed wall, result: ", currentSteps)
-				//check if steps is not -1, path is not nil, and path is shorter than the base path
-				//Step count would be steps up to the cheat, p, 2 steps for the cheat and then steps from the cheat to the end
-				if currentSteps != -1 && currentPath != nil && currentSteps+p+2 < steps {
-					//fmt.Println("Current Path shorter than base path")
-					//fmt.Println("Current total steps: ", currentSteps)
-					timeSaved := steps - (currentSteps + p + 2)
-					if timeSaved >= 100 {
-						//fmt.Println("Time Saved: ", timeSaved)
-						cheats++
+				// check if the neighbor2 is within the basePath
+				for i, coord := range basePath {
+					if coord == neighbor2 {
+						//We now know that this cheat puts us back on the base path
+						//i is the index of neighbor2 in the base path, need to calculate how many steps left to the end & compare
+						//We have already gone "p" steps along the track, and 1 step to the wall + 1 step past
+						//We are now at "i" steps along the track, so we have "steps - i" steps left to the end
+						timeToEnd := p + 2 + (steps - i)
+
+						timeSaved := steps - timeToEnd
+						if timeSaved >= 100 {
+							fmt.Println("Time Saved: ", timeSaved)
+							cheats++
+
+						}
 
 					}
 				}
-				//add the wall back
-				matrix[neighbor1.Y][neighbor1.X] = "#"
 
 			}
 		}
@@ -223,32 +225,6 @@ func isWithinGrid(coord Coordinate, rows, cols int) bool {
 	return coord.Y >= 0 && coord.Y < rows && coord.X >= 0 && coord.X < cols
 }
 
-// currentSteps, currentPath := BFS(matrix, neighbor2, end, visited)
-// 				fmt.Println("Removed wall, result: ", currentSteps)
-// 				//check if steps is not -1, path is not nil, and path is shorter than the base path
-// 				//Step count would be steps up to the cheat, p, 2 steps for the cheat and then steps from the cheat to the end
-// 				if currentSteps != -1 && currentPath != nil && currentSteps < steps+p+2 {
-// 					fmt.Println("Current Path shorter than base path")
-// 					fmt.Println("Current total steps: ", currentSteps)
-// 					fmt.Println("Time Saved: ", (steps+p+2)-currentSteps)
-// 				}
-// 				//add the wall back
-// 				matrix[neighbor1.Y][neighbor1.X] = "#"
-
-////////////////////////////////////////
-//alternative check to get to the end, check original track
-
-// //check if the neighbor2 is within the basePath
-// for i, coord := range basePath {
-// 	if coord == neighbor2 {
-// 		//We now know that this cheat puts us back on the base path
-// 		//i is the index of neighbor2 in the base path, calculate how many steps left to the end
-// 		//We have already gone "p" steps along the track, and 1 step to the wall, and we are now at "i" steps along the track, so we have "steps - i" steps left to the end
-// 		timeToEnd := p + 1 + (steps - i)
-
-// 	}
-// }
-
 func NeighborInBasePath(neighbor2 Coordinate, basePath []Coordinate) bool {
 	for _, coord := range basePath {
 		if coord == neighbor2 {
@@ -257,3 +233,21 @@ func NeighborInBasePath(neighbor2 Coordinate, basePath []Coordinate) bool {
 	}
 	return false
 }
+
+//Significantly slower, alternative method for part 1, use BFS from each neighbor location.
+// currentSteps, currentPath := BFS(matrix, neighbor2, end, visited)
+// 				//fmt.Println("Removed wall, result: ", currentSteps)
+// 				//check if steps is not -1, path is not nil, and path is shorter than the base path
+// 				//Step count would be steps up to the cheat, p, 2 steps for the cheat and then steps from the cheat to the end
+// 				if currentSteps != -1 && currentPath != nil && currentSteps+p+2 < steps {
+// 					//fmt.Println("Current Path shorter than base path")
+// 					//fmt.Println("Current total steps: ", currentSteps)
+// 					timeSaved := steps - (currentSteps + p + 2)
+// 					if timeSaved >= 100 {
+// 						//fmt.Println("Time Saved: ", timeSaved)
+// 						cheats++
+
+// 					}
+// 				}
+// 				//add the wall back
+// 				matrix[neighbor1.Y][neighbor1.X] = "#"

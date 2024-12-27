@@ -125,7 +125,8 @@ type Coordinate struct {
 EOF
 
 #Pull the input for the day
-cd .. && ./input/input --day 17
+cd ..
+./input/input --day 17
 
 #Create blank example file
 touch ./input/day$day.example

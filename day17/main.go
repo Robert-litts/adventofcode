@@ -128,7 +128,7 @@ func Part1(inputFile string) error {
 
 	fmt.Println("Program:", program)
 	fmt.Println("Registers:", regA, regB, regC)
-	fmt.Println("Output: ", output, part1)
+	fmt.Println("Output: ", part1)
 
 	return nil
 }
