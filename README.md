@@ -2,9 +2,9 @@
 
 ### Overview & Solutions 
 
-Solutions to [Advent of Code](https://adventofcode.com) challenges, a yearly coding event started in 2015 where a new puzzle is released each day from December 1st to December 25th. Solutions are categorized by year and then by day. Check out a behind the scenes look by the creator, Eric Wastl, during his [2024 keynote at CPP North](https://www.youtube.com/watch?v=uZ8DcbhojOw) for AoC's 10th anniversary.
+Solutions to [Advent of Code](https://adventofcode.com) challenges, a yearly coding event started in 2015 where a new puzzle is released each day from December 1st to December 25th. Solutions are categorized by year and then by day. Check out a behind the scenes look at AoC by the creator, Eric Wastl, during his [2024 keynote at CPP North](https://www.youtube.com/watch?v=uZ8DcbhojOw) for AoC's 10th anniversary.
 
-Puzzles can be solved in any language & follow a holiday-themed storyline and cover a wide variety of programming topics including, but not limited to: 
+Puzzles can be solved in any language, follow a holiday-themed storyline, and cover a wide variety of programming topics including, but not limited to: 
 - **Algorithms & Graph Theory**  
   - Pathfinding algorithms (e.g., Dijkstra, breadth-first search, depth-first search, A*)
   - Dynamic programming
